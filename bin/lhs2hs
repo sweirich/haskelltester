@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# convert .lhs file to .hs file (input file as commandline argument, output to stdout)
+
+HSPP="`dirname $1`/`basename $1 .lhs`.hspp"
+HS="`dirname $1`/`basename $1 .lhs`.hs"
+
+ghc -E $1
+awk 1 RS= ORS="\n\n" $HSPP | tail -n +4 | sed -e 's/^  //'

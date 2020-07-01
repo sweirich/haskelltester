@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# convert a haskell file with annotations such as "{- SOLN -}answer{- STUBWITH stub -}" into "stub"
+# reads source from stdin, output to stdout
+perl -pe 'BEGIN { undef $/; } s/[\{][-]\s*?SOLN.*?STUBWITH(\s*\r?\n|\s)(.*?)\s*[-][\}]/$2/sg'

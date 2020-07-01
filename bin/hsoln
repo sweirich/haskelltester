@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# convert a haskell file with annotations such as "{- SOLN -}answer{- STUBWITH stub -}" into "answer"
+
+perl -pe 'BEGIN { undef $/; } s/[\{][-]\s*?SOLN\s*?[-][\}](.*?)[\{][-]\s*?STUBWITH(\s*\r?\n|\s)(.*?)\s*[-][\}]/$1/sg'

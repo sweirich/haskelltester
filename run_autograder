@@ -1,0 +1,41 @@
+#!/bin/bash
+
+LOGFILE=/autograder/submission/error.out
+
+export PATH=~/.cabal/bin:~/.ghcup/bin:$PATH
+
+ghc --version
+
+## make a place for the results
+mkdir -p /autograder/results
+
+## switch to directory with hw specific test harness
+cd /autograder/source/src
+
+## copy student's code to this directory 
+## TODO: (make sure the right files were submitted)
+cp /autograder/submission/* .
+
+## compile the test harness
+## cabal -j1 v1-install 2> $LOGFILE
+ghc -main-is GradeScopeMain -o TestMain --make GradeScopeMain.hs 2> $LOGFILE
+
+if [[ $? == 0 ]]; then
+    ## run the test cases
+	 echo "======= TEST OUTPUT ======="
+	 ./TestMain
+    if [[ $? != 0 ]]; then
+        echo "Memory failure when testing submission. Runaway recursion?" > $LOGFILE
+        runghc /autograder/source/ReportError.hs $LOGFILE
+    fi
+
+	 ## if the testcases succeed, run hlint on the submission and cat the result
+	 echo "====== HLINT OUTPUT ======="
+	 hlint *.hs
+else
+    echo "Compilation errors:"
+    cat $LOGFILE
+    runghc /autograder/source/ReportError.hs $LOGFILE
+fi
+
+
