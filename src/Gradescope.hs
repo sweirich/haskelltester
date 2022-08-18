@@ -6,6 +6,7 @@
 module Gradescope where
 
 import GHC.Generics
+import Control.Monad ( when ) 
 import Data.Aeson ( ToJSON(toJSON), Value(..), Object )
 import Data.Aeson.Encoding ( encodingToLazyByteString, value )
 import Data.Text ( Text )
@@ -15,6 +16,7 @@ import qualified Data.Aeson.KeyMap as Map
 import Data.Generics ( everywhere', mkT )
 import Data.Maybe ( catMaybes )
 import System.Exit
+import qualified System.Directory as D
 
 data Visibility = Hidden
                 | AfterDueDate
@@ -81,7 +83,10 @@ recordResult result = do
 writeResult :: AGResult -> IO ()
 writeResult result = do
   let encoded = encodeNoNulls result
-  B.writeFile "/autograder/results/results.json" encoded
+  let resultsDir = "/autograder/results/"
+  dirExists <- D.doesDirectoryExist resultsDir
+  when dirExists $ 
+     B.writeFile (resultsDir ++ "results.json") encoded
 --  print result
 --  B.putStr encoded
 
