@@ -6,7 +6,6 @@
 module Gradescope where
 
 import GHC.Generics
-import Control.Monad ( when ) 
 import Data.Aeson ( ToJSON(toJSON), Value(..), Object )
 import Data.Aeson.Encoding ( encodingToLazyByteString, value )
 import Data.Text ( Text )
@@ -85,9 +84,10 @@ writeResult result = do
   let encoded = encodeNoNulls result
   let resultsDir = "/autograder/results/"
   dirExists <- D.doesDirectoryExist resultsDir
-  when dirExists $ 
+  if dirExists then
      B.writeFile (resultsDir ++ "results.json") encoded
---  print result
+  else
+     print result
 --  B.putStr encoded
 
 tshow :: Show a => a -> Text
