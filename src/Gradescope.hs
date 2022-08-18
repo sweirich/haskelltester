@@ -11,7 +11,7 @@ import Data.Aeson.Encoding ( encodingToLazyByteString, value )
 import Data.Text ( Text )
 import qualified Data.Text as T
 import qualified Data.ByteString.Lazy as B
-import qualified Data.HashMap.Lazy as Map
+import qualified Data.Aeson.KeyMap as Map
 import Data.Generics ( everywhere', mkT )
 import Data.Maybe ( catMaybes )
 import System.Exit
