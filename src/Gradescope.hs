@@ -104,7 +104,7 @@ writeResult result = do
   if dirExists then
      B.writeFile (resultsDir ++ "results.json") encoded
   else
-     print result
+     printResult result
 --  B.putStr encoded
 
 tshow :: Show a => a -> Text
