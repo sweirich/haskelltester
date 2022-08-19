@@ -63,12 +63,13 @@ printTest AGTest{score,max_score,number,output} = do
       ss (Just s) (Just ms) = show s ++ "/" ++ show ms
       ss (Just s) Nothing = show s ++ " points"
       ss _ _ = "no score"
-  putStrLn $ show number  ++ ") " ++ ss score max_score
-  putStrLn (show output)
+  putStrLn $ T.unpack number  ++ ")"
+  putStrLn $ "\t" ++ ss score max_score
+  putStrLn $ "\t" ++ (T.unpack output)
 
 printResult :: AGResult -> IO ()
 printResult r@AGResult {score,output,tests} = do
-  putStrLn (show output)
+  putStrLn (T.unpack output)
   putStrLn $ "Score: " ++ show score ++ "/" ++ show (totalMaxScore r)
   forM_ tests $ printTest
 
