@@ -8,7 +8,7 @@ It is tailored for use with the gradescope tool: https://www.gradescope.com/ but
    yyy {-# STUBWITH xxx #-}`. The `hstub` utitlity will create a version of the
    file that replaces `yyy` with `xxx`.
 
-2. Create a `TestMain.hs` module that imports `Tester` from the `gradescope`
+2. Create a `test/Main.hs` module that imports `Tester` from the `gradescope`
    library. Use this library to define the `Problem`s for the assignment.
 
 ```haskell
@@ -33,8 +33,8 @@ main = testerMain [problem0, problem1, problem2, problem3, problem4]
 ```
 
 3. Give the stubbed versions of the source files to students, but keep your
-   tests private. When they submit, compile the stubbed versions using your
-   `TestMain`.
+   tests private. When they submit, compile their versions using your
+   `test/Main`.
 
 ## Setting up assignments in gradescope
 

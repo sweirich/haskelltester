@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# convert a cabal file with annotations such as "-- SOLN\n  -- STUBWITH stub\n" into "stub"
+# reads source from stdin, output to stdout
+perl -pe 'BEGIN { undef $/; } s/--\s*?SOLN.*?--\s*?STUBWITH(\s*\r?\n|\s)(.*?)/$2/sg'

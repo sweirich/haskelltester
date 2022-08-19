@@ -198,16 +198,13 @@ gradeScopeMain problems = do
   let record = G.AGResult {
       G.score = Just (sum . catMaybes $ scores)
     , G.execution_time = Nothing
-    , G.output      = "CIS 552 HUnit test results"
+    , G.output      = "CIS 5520 HUnit test results"
     , G.visibility  = G.AfterPublished
     , G.tests = ts
   }
   G.recordResult record
   
 ---------------------------------------------------------------
-
-
-
 
 
 testerMain :: [Problem] -> IO ()

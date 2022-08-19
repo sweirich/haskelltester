@@ -1,10 +1,11 @@
 {-# LANGUAGE DeriveAnyClass, DeriveGeneric, DuplicateRecordFields, OverloadedStrings,
-             LambdaCase, ScopedTypeVariables #-}
+             LambdaCase, ScopedTypeVariables,NamedFieldPuns #-}
 
 {-# OPTIONS_GHC -W #-}
 
 module Gradescope where
 
+import Control.Monad(forM_)
 import GHC.Generics
 import Data.Aeson ( ToJSON(toJSON), Value(..), Object )
 import Data.Aeson.Encoding ( encodingToLazyByteString, value )
@@ -36,6 +37,7 @@ data AGTest = AGTest { score :: Maybe Double
                      , visibility :: Visibility }
               deriving (Show, Generic, ToJSON)
 
+
 data AGResult = AGResult { score :: Maybe Double
                          , execution_time :: Maybe Double
                          , output :: Text
@@ -54,6 +56,21 @@ def_result = AGResult { score = Nothing
                       , output = ""
                       , visibility = Visible
                       , tests = [] }
+
+printTest :: AGTest -> IO ()
+printTest AGTest{score,max_score,number,output} = do
+  let ss :: Maybe Double -> Maybe Double -> String
+      ss (Just s) (Just ms) = show s ++ "/" ++ show ms
+      ss (Just s) Nothing = show s ++ " points"
+      ss _ _ = "no score"
+  putStrLn $ show number  ++ ") " ++ ss score max_score
+  putStrLn (show output)
+
+printResult :: AGResult -> IO ()
+printResult r@AGResult {score,output,tests} = do
+  putStrLn (show output)
+  putStrLn $ "Score: " ++ show score ++ "/" ++ show (totalMaxScore r)
+  forM_ tests $ printTest
 
 -- remove any ("foo" : null) bindings in objects
 noNulls :: Value -> Value
