@@ -25,27 +25,25 @@
 #    cabal.project 
 #    CHANGELOG.md
 #    .hlint.yaml
-#    src/          -- all homework problems
+#    src/          -- all homework problems, in lhs
 #    dat/          -- (optional) data files
 #    grading/      -- grading tests
 #    Makefile  
 
 
 
-# STUB_DIR/hwXX/
-
-# EXPORT_DIR/hwXX/
-
-
 ##################################################################################
 
-# The individual Makefiles for each assignment must define:
+# The Makefiles in the homework project should reference this file, and may define 
+# any of the following. (ONLY HWNAME is required).
 
-STUB_DIR     ?= ../../../hw-stubs
 # where to put the (lhs) stubs
-EXPORT_DIR   ?= ../../../hw-repos
-# where to put the (hs) repos for the students
+STUB_DIR     ?= ../../../hw-stubs
 
+# where to put the (hs) repos for the students
+EXPORT_DIR   ?= ../../../hw-repos
+
+# where to find this, and other files relative to hwXX source directory
 TOOLS_DIR    ?= ../../../haskelltester
 
 # name of the directory and cabal project, e.g. hw01 etc.
@@ -59,27 +57,29 @@ EXTRA        ?= $(wildcard src/*.hs) $(wildcard dat/*)
 
 CABAL_EXTRA  ?= LICENSE cabal.project CHANGELOG.md stack.yaml .hlint.yaml
 
+# files needed for grading, not distributed to students
 TESTSRC      ?= $(wildcard test/*.hs)  
-# files needed for grading
 
-HSSTUBS      ?= $(STUBS:.lhs=.hs)
-HTMLSTUBS    ?= $(STUBS:.lhs=.html)
-EXPORTSTUBS  ?= $(EXPORTS:.lhs=.hs)
+# files that students need to submit, by default, the stubbed lhs files
+SUBMIT       ?= $(SOURCES:.lhs=.hs)
 
-GITHUBFILES  ?= $(EXPORTSTUBS) 
-
+# location of repo to make webpage & test
 STUB         ?= $(STUB_DIR)/$(HWNAME)
-# location of repo to give to students
 
+# location of repo to give to students
 REPO         ?= $(EXPORT_DIR)/$(HWNAME)
-# location of repo to give to students
 
+# all files necessary to build the project
 PROJECT      ?= $(SOURCES) $(EXTRA) $(CABAL_EXTRA)
 
+HTMLSTUBS    ?= $(addprefix $(STUB)/,$(SOURCES:.lhs=.html))
+
 STUBFILES    ?= $(addprefix $(STUB)/,$(PROJECT)) $(addprefix $(STUB)/,$(TESTSRC))
+
 EXPORTFILES  ?= $(addprefix $(REPO)/,$(PROJECT:.lhs=.hs))
 
 GS_TESTER_SRC  ?= setup.sh run_autograder ReportError.hs
+
 GRADESCOPE_ZIP ?= $(HWNAME)_grader.zip
 
 echo:  
@@ -104,6 +104,7 @@ TOOLS          := $(BASE_DIR)
 HSTUB  :=$(TOOLS_DIR)/bin/hstub
 HSOLN  :=$(TOOLS_DIR)/bin/hsoln
 CSTUB  :=$(TOOLS_DIR)/bin/cstub
+YSTUB  :=$(TOOLS_DIR)/bin/ystub
 LHS2HS :=$(TOOLS_DIR)/bin/lhs2hs
 
 ########## General ############################################################
@@ -113,14 +114,17 @@ LHS2HS :=$(TOOLS_DIR)/bin/lhs2hs
 all: test 
 
 clean:
-	-rm -rf $(STUB) stub/ export/ export_html/ src/*.hi src/*.o src/grade.org src/*.hspp src/scores.out src/feedback.txt src/*.bak 
+	-rm -rf .stack-work $(GRADESCOPE_ZIP)
+	-rm -rf $(STUB)
+	-rm -rf $(REPO)/*
 	-find . -name '*~' -o -name '#.*#' | xargs rm -rf
 
 
 ########## stub ###########################################
 # 
 # Note: the stub files are still .lhs files so that we can run pandoc on them
-# for the website. 
+# for the website. They also include the testing code so that we can 
+# make sure that the tests work for the stubbed code.
 
 $(STUB): 
 	@echo ========== Creating $(STUB) ==========
@@ -153,10 +157,13 @@ test: stub
 # Key vars include:
 #    SOURCES = Haskell .lhs source files to process
 #    EXTRA = non .lhs files to distribute in repo  (.hs files, data, etc.)
+#    SUBMIT = list of .hs files that students need to submit
 #
 # This process converts .lhs in the sources to .hs files and runs the formatter on the 
-# output. At the same time, Main.lhs in the cabal file is updated to Main.hs 
+# output. At the same time, any Main.lhs in the cabal file is updated to Main.hs 
 # in the github repo.
+#
+# This script also creates a script "submit.sh" to use to create a zipfile for submission.
 
 
 $(REPO) :
@@ -175,16 +182,22 @@ $(REPO)/$(HWNAME).cabal : $(HWNAME).cabal
 	$(CSTUB) < $(HWNAME).cabal > $@
 	sed -i "" 's/lhs/hs/g' $(REPO)/*.cabal
 
-export: $(REPO) $(PROJECT) $(REPO)/$(HWNAME).cabal $(addprefix $(REPO)/,$(SOURCES:.lhs=.hs))
+$(REPO)/submit.sh: 
+	echo "!#/bin/bash" > $(REPO)/submit.sh
+	echo "zip submit.zip $(SUBMIT)" >& $(REPO)/submit.sh
+	chmod u+x $(REPO)/submit.sh
+
+export: $(REPO) $(PROJECT) $(REPO)/$(HWNAME).cabal $(REPO)/submit.sh $(addprefix $(REPO)/,$(SOURCES:.lhs=.hs))
 	@echo ========== Copying files to student github repo ========
 	if [ -n "$(EXTRA)" ]; then rsync -R $(EXTRA) $(REPO) ; fi
 	cp $(CABAL_EXTRA) $(REPO)
-	sed -i "" 's/-.*haskelltester\/gradescope\///g' $(REPO)/stack.yaml
+	$(YSTUB) < stack.yaml > $(REPO)/stack.yaml
 
 
 ########## Gradescope Zipfile ############################################################
 
 # Recipe to construct a zipfile appropriate for testing this assignment via gradescope
+# this does not include any of the files that should be submitted by the students
 
 zipfile: $(addprefix $(TOOLS_DIR)/,$(GS_TESTER_SRC)) $(TESTSRC) 
 	rm -rf $(GRADESCOPE_ZIP)
