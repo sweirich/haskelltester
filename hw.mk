@@ -5,37 +5,59 @@
 #   literate Haskell explanation of homework problems
 #   processing of input via stubbing, formatting and hlint
 #   submission time testing, via gradescope and `stack test`
-
-# Use the following make targets:
-
-#   clean   (removes generated files)
-#   stub    (generates stub directory in STUB_DIR/hwXX)
-#   export  (generates export directory in EXPORT_DIR/hwXX)
-#   test    (compiles and runs test cases on stubs and solution)
-#   zipfile (generates gradescope tester)
-
-##################################################################################
-
+#
 # a homework project should have the following form:
-
+#
 #  hwXX/
 #    hwXX.cabal
 #    stack.yaml
 #    LICENSE
-#    cabal.project 
-#    CHANGELOG.md
 #    .hlint.yaml
 #    src/          -- all homework problems, in lhs
+#                  -- as well as helper modules in hs
 #    dat/          -- (optional) data files
-#    grading/      -- grading tests
+#    test/         -- grading tests
+#    submit.sh     -- submission zip command for students 
 #    Makefile  
-
-
+#
+# From this source, the makefile generates two complete versions of the
+# project:
+#
+#    STUB_DIR/hwXX    -- answers removed
+#    EXPORT_DIR/hwXX  -- answers removed, test cases removed, lhs->hs, formatted
+#
+# as well as a zip file to upload to gradescope 
+#
+#    hwXX_grader.zip -- autograder
+#
+# The first can be used to make sure that the stubs work with the tests and to 
+# use pandoc to generate webpages that describe the homework.
+#
+# The second is what students should edit to do the assignment. (NOTE: many vs code 
+# lenses and formatters do not support lhs, so we give the students hs instead.)
+#
+# The third uses the test suite to grade the correctness of the assignment.
 
 ##################################################################################
 
+# This file defines the following make targets:
+
+#   stub    (generates stub directory in STUB_DIR/hwXX)
+#   run     (compiles and runs executable on stub, repo and solution)
+#   test    (compiles and runs test cases on stubs and solution)
+#   zipfile (generates gradescope tester)
+#   export_files  (generates export directory in EXPORT_DIR/hwXX)
+#   clean   (removes all generated files)
+
+##################################################################################
+
+# This makefile is configurable. 
+
 # The Makefiles in the homework project should reference this file, and may define 
-# any of the following. (ONLY HWNAME is required).
+# any of the following.
+
+# name of the directory and cabal project, e.g. hw01 etc.
+HWNAME       ?= hw     
 
 # where to put the (lhs) stubs
 STUB_DIR     ?= ../../../hw-stubs
@@ -45,9 +67,6 @@ EXPORT_DIR   ?= ../../../hw-repos
 
 # where to find this, and other files relative to hwXX source directory
 TOOLS_DIR    ?= ../../../haskelltester
-
-# name of the directory and cabal project, e.g. hw01 etc.
-HWNAME       ?= hw     
 
 # all lhs source files, with stubbing
 SOURCES      ?= $(wildcard src/*.lhs) 
@@ -71,8 +90,6 @@ REPO         ?= $(EXPORT_DIR)/$(HWNAME)
 
 # all files necessary to build the project
 PROJECT      ?= $(SOURCES) $(EXTRA) $(CABAL_EXTRA)
-
-HTMLSTUBS    ?= $(addprefix $(STUB)/,$(SOURCES:.lhs=.html))
 
 STUBFILES    ?= $(addprefix $(STUB)/,$(PROJECT)) $(addprefix $(STUB)/,$(TESTSRC))
 
@@ -111,7 +128,7 @@ LHS2HS :=$(TOOLS_DIR)/bin/lhs2hs
 
 .PHONY: all clean test 
 
-all: test 
+all: run test export_files zipfile
 
 clean:
 	-rm -rf .stack-work $(GRADESCOPE_ZIP)
@@ -142,6 +159,17 @@ stub : $(STUB) $(PROJECT) $(TESTSRC) $(addprefix $(STUB)/,$(SOURCES))
 	rsync -R $(CABAL_EXTRA) $(STUB)
 	rsync -R $(TESTSRC) $(STUB)
 
+########## run ###########################################
+
+run: stub export_files
+	@echo ================= running lhs stub ==============
+	(cd $(STUB) ; stack run)	
+	@echo ================= running hs stub ==============
+	(cd $(REPO) ; stack run)	
+	@echo ================= running soln ==================
+	stack run
+
+
 ########## test ###########################################
 
 test: stub
@@ -149,6 +177,7 @@ test: stub
 	(cd $(STUB) ; stack test)	
 	@echo ================= testing soln ==================
 	stack test
+
 
 ########## export ###########################################
 #
@@ -187,7 +216,7 @@ $(REPO)/submit.sh:
 	echo "zip submit.zip $(SUBMIT)" >& $(REPO)/submit.sh
 	chmod u+x $(REPO)/submit.sh
 
-export: $(REPO) $(PROJECT) $(REPO)/$(HWNAME).cabal $(REPO)/submit.sh $(addprefix $(REPO)/,$(SOURCES:.lhs=.hs))
+export_files: $(REPO) $(PROJECT) $(REPO)/$(HWNAME).cabal $(REPO)/submit.sh $(addprefix $(REPO)/,$(SOURCES:.lhs=.hs))
 	@echo ========== Copying files to student github repo ========
 	if [ -n "$(EXTRA)" ]; then rsync -R $(EXTRA) $(REPO) ; fi
 	cp $(CABAL_EXTRA) $(REPO)

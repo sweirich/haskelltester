@@ -9,18 +9,22 @@
 module ReportError where
 
 import GHC.Generics
+import Data.Generics ( everywhere', mkT )
+
 import Data.Aeson ( ToJSON(toJSON), Value(..), Object )
 import Data.Aeson.Encoding ( encodingToLazyByteString, value )
+import Data.Aeson.KeyMap as Map
 
+import Data.Text ( Text )
 import qualified Data.Text.IO as T
 import qualified Data.ByteString.Lazy as B
-import Data.Text ( Text )
-import qualified Data.Text as T
+
 import qualified System.Directory as D
 
-
 import System.Environment
-import Data.Monoid
+
+----------------------------------------------------------------
+-- From Gradescope.hs, copied here to eliminate dependency
 
 data Visibility = Hidden
                 | AfterDueDate
@@ -42,6 +46,13 @@ data AGResult = AGResult { score :: Maybe Double
                          , tests :: [AGTest] }
             deriving (Show, Generic, ToJSON)
 
+def_result = AGResult { score = Nothing
+                      , execution_time = Nothing
+                      , output = ""
+                      , visibility = Visible
+                      , tests = [] }
+
+
 encodeNoNulls :: ToJSON a => a -> B.ByteString
 encodeNoNulls = encodingToLazyByteString . value . noNulls . toJSON
 
@@ -61,6 +72,7 @@ writeResult result = do
   else
      print result
 
+----------------------------------------------------------------
 
 main = do
   [error_log] <- getArgs

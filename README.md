@@ -7,6 +7,9 @@ It is tailored for use with the gradescope tool: https://www.gradescope.com/ but
 1. Create an assignment as normally, marking student answers with `{-# SOLN #-}
    yyy {-# STUBWITH xxx #-}`. The `hstub` utitlity will create a version of the
    file that replaces `yyy` with `xxx`.
+   
+1a. Add the following to your stack.yaml file:
+
 
 2. Create a `test/Main.hs` module that imports `Tester` from the `gradescope`
    library. Use this library to define the `Problem`s for the assignment.

@@ -1,7 +1,7 @@
 cabal-version:       >=1.10
 
 name:                gradescope
-version:             0
+version:             0.0.1
 -- synopsis:
 -- description:
 -- bug-reports:

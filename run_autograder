@@ -7,46 +7,54 @@ export PATH=~/.cabal/bin:~/.ghcup/bin:~/.local/bin:$PATH
 ghc --version
 
 echo "======= submitted files =========="
-ls /autograder/submission /autograder/submission/* /autograder/submission/*/*
-
+ls -R /autograder/submission 
 
 ## make a place for the results
 mkdir -p /autograder/results
 
-## make a place for the project
-mkdir -p /autograder/project
-cd project
+## make a place for the project source files
+## the -p flag makes the project directory too
+mkdir -p /autograder/project/src
+
+## and go there
+cd /autograder/project
+
 
 ## copy student's code to this directory 
-## TODO: (make sure the right files were submitted)
-cp -a /autograder/submission/. .
+## the -a flag preserves the directory structure of the files that were submitted
+## TODO: (can we make sure the right files were submitted?)
+cp -a /autograder/submission/. . 2>$LOGFILE
+
+## if students submitted raw .hs, move them to the src directory
+if compgen -G "*.hs" > /dev/null; do
+    echo "=== moving to src directory==="
+    mv *.hs src 2>$LOGFILE
+done
 
 ## cp hw specific test harness here
 cp -a /autograder/source/. .
 
-
-
-## compile the test harness
-## cabal -j1 v1-install 2> $LOGFILE
-## ghc -main-is GradeScopeMain -o TestMain --make GradeScopeMain.hs 2> $LOGFILE
+## compile the project, recording the compilation output in case there is an error
 stack build 2> $LOGFILE
 
 if [[ $? == 0 ]]; then
     ## run the test cases
-	 echo "======= TEST OUTPUT ======="
-	 stack test
+    echo "======= TEST OUTPUT ======="
+    stack test
+    
     if [[ $? != 0 ]]; then
         echo "Memory failure when testing submission. Runaway recursion?" > $LOGFILE
-        runghc /autograder/source/ReportError.hs $LOGFILE
+        stack runghc -- /autograder/source/ReportError.hs $LOGFILE
     fi
 
-	 ## if the testcases succeed, run hlint on the submission and cat the result
-	 echo "====== HLINT OUTPUT ======="
-	 hlint src/*.hs
+    ## if build is successful, hlint
+    echo "====== HLINT OUTPUT ======="
+    stack exec -- hlint src/*.hs
+
 else
     echo "Compilation errors:"
     cat $LOGFILE
-    runghc /autograder/source/ReportError.hs $LOGFILE
+    stack runghc -- /autograder/source/ReportError.hs $LOGFILE
 fi
 
 
