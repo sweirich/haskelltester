@@ -1,5 +1,6 @@
 #!/bin/bash
 
+echo "========== running autograder =========="
 LOGFILE=/autograder/submission/error.out
 
 export PATH=~/.cabal/bin:~/.ghcup/bin:~/.local/bin:$PATH
@@ -26,10 +27,10 @@ cd /autograder/project
 cp -a /autograder/submission/. . 2>$LOGFILE
 
 ## if students submitted raw .hs, move them to the src directory
-if compgen -G "*.hs" > /dev/null; do
+if compgen -G "*.hs" > /dev/null; then
     echo "=== moving to src directory==="
     mv *.hs src 2>$LOGFILE
-done
+fi
 
 ## cp hw specific test harness here
 cp -a /autograder/source/. .
@@ -44,7 +45,8 @@ if [[ $? == 0 ]]; then
     
     if [[ $? != 0 ]]; then
         echo "Memory failure when testing submission. Runaway recursion?" > $LOGFILE
-        stack runghc -- /autograder/source/ReportError.hs $LOGFILE
+        cd /autograder/haskelltester
+        stack runghc -- ReportError.sh $LOGFILE
     fi
 
     ## if build is successful, hlint
@@ -54,7 +56,8 @@ if [[ $? == 0 ]]; then
 else
     echo "Compilation errors:"
     cat $LOGFILE
-    stack runghc -- /autograder/source/ReportError.hs $LOGFILE
+    cd /autograder/haskelltester
+    stack runghc -- ReportError.sh $LOGFILE
 fi
 
 

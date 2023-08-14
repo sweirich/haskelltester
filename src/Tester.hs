@@ -36,7 +36,15 @@ instance Assertable Result where
   assert _            = assert False
 
 instance Semigroup Problem where
-  (<>) = mappend
+  p1 <> p2 = 
+       Problem 
+            { name         = name         p1 ++ name         p2
+            , tests        = tests        p1 ++ tests        p2
+            , requirements = requirements p1 +  requirements p2
+            , style        = style        p1 +  style        p2
+            , design       = design       p1 +  design       p2
+            , testcases    = testcases    p1 +  testcases    p2 }
+
   
 instance Monoid Problem where
   mempty          =
@@ -46,14 +54,8 @@ instance Monoid Problem where
             , style           = 0
             , design          = 0
             , testcases = 0 }
-  p1 `mappend` p2 =
-    Problem { name         = name         p1 ++ name         p2
-            , tests        = tests        p1 ++ tests        p2
-            , requirements = requirements p1 +  requirements p2
-            , style        = style        p1 +  style        p2
-            , design       = design       p1 +  design       p2
-            , testcases    = testcases    p1 +  testcases    p2 }
 
+ 
 
 
 withName :: String -> Problem -> Problem
@@ -196,7 +198,7 @@ gradeScopeMain problems = do
   ts <- mapM gradescopeProblem problems
   let scores = Prelude.map (G.score :: G.AGTest -> Maybe Double) ts
   let record = G.AGResult {
-      G.score = Just (sum . catMaybes $ scores)
+      G.result_score = Just (sum . catMaybes $ scores)
     , G.execution_time = Nothing
     , G.output      = "CIS 5520 HUnit test results"
     , G.visibility  = G.AfterPublished

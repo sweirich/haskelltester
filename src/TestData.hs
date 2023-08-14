@@ -34,12 +34,13 @@ data ManualScore =
   deriving (Generic, Show)
 
 instance Semigroup ManualScore where
-  (<>) = mappend
+  (<>) :: ManualScore -> ManualScore -> ManualScore
+  (ManualScore r s d t c) <> (ManualScore r2 s2 d2 t2 c2) =
+    (ManualScore (r + r2) (s + s2) (d + d2) (t+t2) (c ++ c2))
 
 instance Monoid ManualScore where
-  mempty = ManualScore 0 0 0 0 ""
-  mappend (ManualScore r s d t c) (ManualScore r2 s2 d2 t2 c2) =
-    (ManualScore (r + r2) (s + s2) (d + d2) (t+t2) (c ++ c2))
+  mempty :: ManualScore
+  mempty = ManualScore 0 0 0 0 "" 
 
 data AutoScore =
   Auto

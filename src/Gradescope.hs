@@ -38,7 +38,7 @@ data AGTest = AGTest { score :: Maybe Double
               deriving (Show, Generic, ToJSON)
 
 
-data AGResult = AGResult { score :: Maybe Double
+data AGResult = AGResult { result_score :: Maybe Double
                          , execution_time :: Maybe Double
                          , output :: Text
                          , visibility :: Visibility
@@ -51,7 +51,7 @@ def_test = AGTest { score = Nothing
                   , output = ""
                   , visibility = Visible }
 
-def_result = AGResult { score = Nothing
+def_result = AGResult { result_score = Nothing
                       , execution_time = Nothing
                       , output = ""
                       , visibility = Visible
@@ -68,9 +68,9 @@ printTest AGTest{score,max_score,number,output} = do
   putStrLn $ "\t" ++ (T.unpack output)
 
 printResult :: AGResult -> IO ()
-printResult r@AGResult {score,output,tests} = do
+printResult r@AGResult {result_score,output,tests} = do
   putStrLn (T.unpack output)
-  putStrLn $ "Score: " ++ show score ++ "/" ++ show (totalMaxScore r)
+  putStrLn $ "Score: " ++ show result_score ++ "/" ++ show (totalMaxScore r)
   forM_ tests $ printTest
 
 -- remove any ("foo" : null) bindings in objects

@@ -69,12 +69,17 @@ EXPORT_DIR   ?= ../../../hw-repos
 TOOLS_DIR    ?= ../../../haskelltester
 
 # all lhs source files, with stubbing
+# These are files that the students should edit and that contain instructions
+# for the homework problems that will be put on the website.
 SOURCES      ?= $(wildcard src/*.lhs) 
+
+# any markdown files, not distributed to students but used to generate webpages
+MARKDOWN     ?= $(wildcard markdown/*.md)
 
 # files to distribute to students, no stubbing needed
 EXTRA        ?= $(wildcard src/*.hs) $(wildcard dat/*)  
 
-CABAL_EXTRA  ?= LICENSE cabal.project CHANGELOG.md stack.yaml .hlint.yaml
+CABAL_EXTRA  ?= LICENSE cabal.project CHANGELOG.md stack.yaml .hlint.yaml hie.yaml
 
 # files needed for grading, not distributed to students
 TESTSRC      ?= $(wildcard test/*.hs)  
@@ -148,6 +153,7 @@ $(STUB):
 	mkdir -p $(STUB)
 	mkdir -p $(STUB)/src
 	mkdir -p $(STUB)/test
+	mkdir -p $(STUB)/markdown
 
 $(STUB)/src/%.lhs: src/%.lhs
 	$(HSTUB) < src/$*.lhs > $(STUB)/src/$*.lhs
@@ -158,6 +164,7 @@ stub : $(STUB) $(PROJECT) $(TESTSRC) $(addprefix $(STUB)/,$(SOURCES))
 	cp $(HWNAME).cabal $(STUB)
 	rsync -R $(CABAL_EXTRA) $(STUB)
 	rsync -R $(TESTSRC) $(STUB)
+	rsync -R $(MARKDOWN) $(STUB)
 
 ########## run ###########################################
 
