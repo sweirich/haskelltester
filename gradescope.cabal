@@ -2,9 +2,6 @@ cabal-version:       >=1.10
 
 name:                gradescope
 version:             0.0.1
--- synopsis:
--- description:
--- bug-reports:
 license:             BSD3
 license-file:        LICENSE
 author:              Richard Eisenberg, Stephanie Weirich

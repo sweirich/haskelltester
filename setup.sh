@@ -8,7 +8,7 @@ apt-get -y install gcc make libnuma-dev libgmp10 libgmp-dev libtinfo-dev
 
 echo "Getting ghcup"
 export BOOTSTRAP_HASKELL_NONINTERACTIVE=1
-export BOOTSTRAP_HASKELL_GHC_VERSION=9.4.5
+export BOOTSTRAP_HASKELL_GHC_VERSION=9.6.6
 export BOOTSTRAP_HASKELL_INSTALL_STACK=1
 
 curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
