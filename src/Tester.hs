@@ -186,7 +186,15 @@ grade s f p@Problem {..} = do
 ------------------------------------------
 
 gradescopeProblem :: Problem -> IO G.AGTest
-gradescopeProblem p@Problem {..} = do
+gradescopeProblem = gradescopeProblem' G.AfterPublished
+
+gradeScopeMain :: [Problem] -> IO ()
+gradeScopeMain = gradeScopeMain' "CIS 5520" G.AfterPublished G.AfterPublished
+
+-- Configurable versions
+
+gradescopeProblem' :: G.Visibility -> Problem -> IO G.AGTest
+gradescopeProblem' vis p@Problem {..} = do
   (autoInfo, autoScore) <-
     (intercalate "  " *** sum) . unzip
       <$> mapM doTest tests
@@ -197,19 +205,19 @@ gradescopeProblem p@Problem {..} = do
         G.max_score = Just (fromIntegral (testPoints p)),
         G.number = T.pack ("(" ++ name),
         G.output = T.pack autoInfo,
-        G.visibility = G.AfterPublished
+        G.visibility = vis
       }
 
-gradeScopeMain :: [Problem] -> IO ()
-gradeScopeMain problems = do
-  ts <- mapM gradescopeProblem problems
+gradeScopeMain' :: T.Text -> G.Visibility -> G.Visibility -> [Problem] -> IO ()
+gradeScopeMain' course visProblems visSum problems = do
+  ts <- mapM (gradescopeProblem' visProblems) problems
   let scores = Prelude.map (G.score :: G.AGTest -> Maybe Double) ts
   let record =
         G.AGResult
           { G.result_score = Just (sum . catMaybes $ scores),
             G.execution_time = Nothing,
-            G.output = "CIS 5520 HUnit test results",
-            G.visibility = G.AfterPublished,
+            G.output = T.append course " HUnit test results",
+            G.visibility = visSum,
             G.tests = ts
           }
   G.recordResult record
