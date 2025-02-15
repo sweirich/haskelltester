@@ -208,7 +208,7 @@ gradescopeProblem' vis p@Problem {..} = do
         G.visibility = vis
       }
 
-gradeScopeMain' :: T.Text -> G.Visibility -> G.Visibility -> [Problem] -> IO ()
+gradeScopeMain' :: String -> G.Visibility -> G.Visibility -> [Problem] -> IO ()
 gradeScopeMain' course visProblems visSum problems = do
   ts <- mapM (gradescopeProblem' visProblems) problems
   let scores = Prelude.map (G.score :: G.AGTest -> Maybe Double) ts
@@ -216,7 +216,7 @@ gradeScopeMain' course visProblems visSum problems = do
         G.AGResult
           { G.result_score = Just (sum . catMaybes $ scores),
             G.execution_time = Nothing,
-            G.output = T.append course " HUnit test results",
+            G.output = (T.concat . map T.pack) [course, " HUnit test results"],
             G.visibility = visSum,
             G.tests = ts
           }
