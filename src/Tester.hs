@@ -3,7 +3,7 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Tester (module TestData, testerMain, fromQuickCheck, withName, gradeScopeMain) where
+module Tester (module TestData, testerMain, fromQuickCheck, withName, gradeScopeMain, gradeScopeMain') where
 
 import Control.Applicative ((<$>))
 import Control.Arrow ((***))
