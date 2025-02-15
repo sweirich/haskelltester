@@ -216,7 +216,7 @@ gradeScopeMain' course visProblems visSum problems = do
         G.AGResult
           { G.result_score = Just (sum . catMaybes $ scores),
             G.execution_time = Nothing,
-            G.output = (T.concat . map T.pack) [course, " HUnit test results"],
+            G.output = (mconcat . map T.pack) [course, " HUnit test results"],
             G.visibility = visSum,
             G.tests = ts
           }
